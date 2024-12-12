@@ -1,12 +1,57 @@
-import React from 'react'
+import { useState } from "react";
+import AuthService from "../services/auth.service";
+import { useNavigate } from "react-router";
+import Swal from "sweetalert2";
 
 const Register = () => {
+  const navigate = useNavigate();
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser({
+      ...user,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const currentUser = await AuthService.register(
+        user.username,
+        user.password
+      );
+      console.log(currentUser);
+      if (currentUser.status === 200) {
+        Swal.fire({
+          title: "User Registration",
+          text: currentUser.data.message,
+          icon: "success",
+        });
+        setUser({
+          username: "",
+          password: "",
+        });
+        navigate("/login");
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "User Registration",
+        text: error?.response?.data?.message || error.message,
+        icon: "success",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-md mt-20 px-4">
       <div className="card shadow-lg bg-base-100 p-6 rounded-lg">
         <h1 className="text-center text-2xl font-bold mb-6">สมัครสมาชิก</h1>
 
-        <div className="form-control mb-4">
+        {/* <div className="form-control mb-4">
           <label className="label">
             <span className="label-text">Email</span>
           </label>
@@ -28,7 +73,7 @@ const Register = () => {
               <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
             </svg>
           </div>
-        </div>
+        </div> */}
 
         <div className="form-control mb-4">
           <label className="label">
@@ -40,7 +85,8 @@ const Register = () => {
               className="input input-bordered w-full pr-10"
               placeholder="Username"
               name="username"
-              //onChange={handleChange}
+              onChange={handleChange}
+              value={user.username}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -59,11 +105,12 @@ const Register = () => {
           </label>
           <div className="relative">
             <input
-            placeholder="Password"
+              placeholder="Password"
               type="password"
               className="input input-bordered w-full pr-10"
               name="password"
-              //onChange={handleChange}
+              value={user.password}
+              onChange={handleChange}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -81,7 +128,7 @@ const Register = () => {
         </div>
 
         <div className="flex justify-end space-x-4 form-control mt-6">
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={handleSubmit}>
             Register
           </button>
         </div>
@@ -90,4 +137,4 @@ const Register = () => {
   );
 };
 
-export default Register
+export default Register;
