@@ -1,6 +1,58 @@
-import React from 'react'
+import { useEffect, useState } from "react";
+import AuthService from "../services/auth.service";
+import { useNavigate } from "react-router";
+import Swal from "sweetalert2";
+import { useAuthContext } from "../context/AuthContext";
 
 const Login = () => {
+  const [user, setUser] = useState({
+    username: "",
+    password: "",
+  });
+
+  const { login, user: loggedUser } = useAuthContext();
+  useEffect(() => {
+    if (loggedUser) {
+      navigate("/");
+    }
+  }, [loggedUser]);
+
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUser({
+      ...user,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const currentUser = await AuthService.login(user.username, user.password);
+      console.log(currentUser);
+      if (currentUser.status === 200) {
+        login(currentUser.data);
+        Swal.fire({
+          title: "User Login",
+          text: currentUser.data.message,
+          icon: "success",
+        });
+        setUser({
+          username: "",
+          password: "",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "User Login",
+        text: error?.response?.data?.message || error.message,
+        icon: "success",
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto max-w-md mt-20 px-4 py-6">
       <div className="card shadow-lg bg-base-100 p-6 rounded-lg">
@@ -15,9 +67,9 @@ const Login = () => {
               type="text"
               className="input input-bordered w-full pr-12"
               placeholder="Username"
-              //value={user.username}
+              value={user.username}
               name="username"
-              //onChange={handleChange}
+              onChange={handleChange}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -39,9 +91,9 @@ const Login = () => {
               type="password"
               className="input input-bordered w-full pr-12"
               placeholder="Password"
-              //value={user.password}
+              value={user.password}
               name="password"
-              //onChange={handleChange}
+              onChange={handleChange}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -59,7 +111,7 @@ const Login = () => {
         </div>
 
         <div className="flex justify-end space-x-4 form-control mt-6">
-          <button className="btn btn-primary">
+          <button className="btn btn-primary" onClick={handleSubmit}>
             Login
           </button>
         </div>
@@ -68,4 +120,4 @@ const Login = () => {
   );
 };
 
-export default Login
+export default Login;

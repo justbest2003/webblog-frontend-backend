@@ -1,15 +1,38 @@
 import React from "react";
+import { useAuthContext } from "../context/AuthContext";
 import Logo from "../assets/Logo.png";
+import Swal from "sweetalert2";
+
 const Navbar = () => {
+  const { user, logout } = useAuthContext();
+
+  const handleLogout = () => {
+    Swal.fire({
+      title: "คุณต้องการออกจากระบบหรือไม่?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ตกลง",
+      cancelButtonText: "ยกเลิก",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();
+        Swal.fire({
+          title: "ออกจากระบบสำเร็จ",
+          icon: "success",
+        });
+      }
+    });
+  };
+
   return (
     <div className="navbar bg-base-100 shadow-lg">
       <div className="navbar-start">
         <a href="/">
-          <img src={Logo} alt="Article Logo" className="h-20 w-20 " />
+          <img src={Logo} alt="Article Logo" className="h-20 w-20" />
         </a>
       </div>
 
-      <div className="navbar-center">
+      {/* <div className="navbar-center">
         <a href="/post" className="btn">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -27,21 +50,40 @@ const Navbar = () => {
           </svg>
           Create new Post
         </a>
-      </div>
+      </div> */}
 
       <div className="navbar-end space-x-2">
-        <a
-          href="/login"
-          className="btn bg-blue-500 hover:bg-blue-700 text-white"
-        >
-          Login
-        </a>
-        <a
-          href="/register"
-          className="btn bg-green-500 hover:bg-green-700 text-white"
-        >
-          Register
-        </a>
+        {user ? (
+          <div>
+            <a
+              href="/create"
+              className="btn bg-gray-500 hover:bg-gray-700 text-white"
+            >
+              Create Post
+            </a>
+            <button
+              className="btn bg-red-500 hover:bg-red-700 text-white"
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+          </div>
+        ) : (
+          <div>
+            <a
+              href="/login"
+              className="btn bg-blue-500 hover:bg-blue-700 text-white"
+            >
+              Login
+            </a>
+            <a
+              href="/register"
+              className="btn bg-green-500 hover:bg-green-700 text-white"
+            >
+              Register
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
