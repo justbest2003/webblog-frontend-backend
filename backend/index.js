@@ -6,7 +6,8 @@ const app = express();
 const BASE_URL = process.env.BASE_URL;
 const PORT = process.env.PORT;
 const DB_URL = process.env.DB_URL;
-const UserRouter = require("./routers/user.router");
+const userRouter = require("./routers/user.router");
+const postRouter = require("./routers/post.router");
 
 try {
   mongoose.connect(DB_URL);
@@ -20,7 +21,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("<h1>Welcome to WebBlog Restful API</h1>");
 });
-app.use("/api/v1/auth", UserRouter);
+app.use("/api/v1/auth", userRouter);
+app.use("/api/v1/post", postRouter);
+
 app.listen(PORT, () => {
   console.log("Server is running on http://localhost:" + PORT);
 });

@@ -19,7 +19,7 @@ const removeUser = () => {
 const setUser = (user) => {
   cookies.get("user", JSON.stringify(user), {
     path: "/",
-    expires: new Date(Date.now() + 86400),
+    expires: new Date(Date.now() + 86400 * 1000),
   });
   return setUser;
 };

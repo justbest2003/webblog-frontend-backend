@@ -1,26 +1,78 @@
 import { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import PostService from "../services/post.service";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router";
 
 const Create = () => {
-  const [title, setTitle] = useState("");
-  const [summary, setSummary] = useState("");
-  const [content, setContent] = useState("");
-  const [image, setImage] = useState(null);
+  const [postDetail, setPostDetail] = useState({
+    title: "",
+    summary: "",
+    content: "",
+    file: "",
+  });
 
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "file") {
+      setPostDetail({ ...postDetail, [name]: e.target.files[0] });
+    } else {
+      setPostDetail({ ...postDetail, [name]: value });
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Post Created:", { title, summary, content, image });
+  const handleSubmit = async () => {
+    try {
+      const data = new FormData();
+      data.set("title", postDetail.title);
+      data.set("summary", postDetail.summary);
+      data.set("content", postDetail.content);
+      if (postDetail.file) {
+        data.set("file", postDetail.file);
+      }
+
+      const response = await PostService.createPost(data);
+
+      if (response.status === 200) {
+        Swal.fire({
+          title: "Create Post",
+          text: "Post created successfully.",
+          icon: "success",
+        }).then(() => {
+          setPostDetail({
+            title: "",
+            summary: "",
+            content: "",
+            file: "",
+          });
+        });
+
+        navigate("/");
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "Something went wrong. Please try again.",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text:
+          error.response?.data?.message ||
+          "An error occurred. Please try again.",
+        icon: "error",
+      });
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
       <h1 className="text-3xl font-bold text-center mb-6">Create New Post</h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-6">
         <div>
           <label
             htmlFor="title"
@@ -31,9 +83,10 @@ const Create = () => {
           <input
             type="text"
             id="title"
+            name="title"
             className="mt-2 p-3 w-full border border-gray-300 rounded-md"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            value={postDetail.title}
+            onChange={handleChange}
             placeholder="Enter the post title"
             required
           />
@@ -48,9 +101,10 @@ const Create = () => {
           </label>
           <textarea
             id="summary"
+            name="summary"
             className="mt-2 p-3 w-full border border-gray-300 rounded-md"
-            value={summary}
-            onChange={(e) => setSummary(e.target.value)}
+            value={postDetail.summary}
+            onChange={handleChange}
             placeholder="Write a short summary"
             rows="3"
             required
@@ -65,8 +119,10 @@ const Create = () => {
             Content
           </label>
           <ReactQuill
-            value={content}
-            onChange={setContent}
+            value={postDetail.content}
+            onChange={(value) =>
+              setPostDetail({ ...postDetail, content: value })
+            }
             placeholder="Write the content of your post"
             className="mt-2 border border-gray-300 rounded-md"
             theme="snow"
@@ -86,33 +142,30 @@ const Create = () => {
 
         <div>
           <label
-            htmlFor="image"
+            htmlFor="file"
             className="block text-lg font-semibold text-gray-700"
           >
             Upload Image
           </label>
           <input
             type="file"
-            id="image"
+            id="file"
+            name="file"
             className="mt-2 p-3 w-full border border-gray-300 rounded-md"
-            onChange={handleImageChange}
+            onChange={handleChange}
           />
-          {image && (
-            <p className="text-sm mt-2 text-gray-500">
-              File selected: {image.name}
-            </p>
-          )}
         </div>
 
         <div className="text-center">
           <button
-            type="submit"
+            onClick={handleSubmit}
+            type="button"
             className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600"
           >
             Create Post
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
