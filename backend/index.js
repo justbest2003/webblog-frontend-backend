@@ -21,6 +21,9 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("<h1>Welcome to WebBlog Restful API</h1>");
 });
+
+app.use("/uploads", express.static(__dirname +"/uploads"));
+
 app.use("/api/v1/auth", userRouter);
 app.use("/api/v1/post", postRouter);
 
