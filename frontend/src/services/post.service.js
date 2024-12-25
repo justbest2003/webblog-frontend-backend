@@ -13,18 +13,27 @@ const createPost = async (post) => {
 
 const getPosts = async () => {
   return await api.get(API_URL);
-}
+};
 
-const getPostsById = async (id) => {
+const getPostById = async (id) => {
   return await api.get(`${API_URL}/${id}`);
   // return await api.get( + "/" + id);
-}
+};
 
+const deleteById = async (id) => {
+  return await api.delete(`${API_URL}/${id}`);
+};
+
+const updatePost = async (id, post) => {
+  return await api.put(`${API_URL}/${id}`, post);
+};
 
 const PostService = {
   createPost,
   getPosts,
-  getPostsById,
+  getPostById,
+  deleteById,
+  updatePost,
 };
 
 export default PostService;
