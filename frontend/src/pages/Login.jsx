@@ -54,9 +54,9 @@ const Login = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-md mt-20 px-4 py-6">
+    <div className="container mx-auto max-w-md mt-20 px-4">
       <div className="card shadow-lg bg-base-100 p-6 rounded-lg">
-        <h1 className="text-center text-2xl font-bold mb-6">ลงชื่อเข้าใช้</h1>
+        <h1 className="text-center text-2xl font-bold mb-6">SignIn</h1>
 
         <div className="form-control mb-4">
           <label className="label">

@@ -8,12 +8,11 @@ const authJwt = require("../middlewares/authJwt.middleware");
 router.post("", authJwt.verifyToken, upload, postController.createPost);
 
 //http://localhost:5000/api/v1/post
-router.get("", postController.getPosts);
+router.get("", postController.getPosts)
 
 //http://localhost:5000/api/v1/post/id
-router.get("/:id", postController.getById);
+router.get("/:id", postController.getById)
 
-//http://localhost:5000/api/v1/post/id
 router.delete("/:id", authJwt.verifyToken, postController.deletePost);
 
 router.put("/:id", authJwt.verifyToken, upload, postController.updatePost);

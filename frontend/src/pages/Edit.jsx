@@ -1,113 +1,110 @@
 import { useState, useEffect, useRef } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import PostService from "../services/post.service";
-import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router";
+import swal from "sweetalert2";
+import PostService from "../services/post.service";
 import Editor from "../components/Editor";
+import { useAuthContext } from "../context/AuthContext";
 
 const Edit = () => {
-  const [postDetail, setPostDetail] = useState({
+  const { id } = useParams();
+  const { user } = useAuthContext();
+  const [post, setPost] = useState({
     title: "",
     summary: "",
-    content: "",
     file: null,
   });
   const [content, setContent] = useState("");
   const editorRef = useRef(null);
-
   const navigate = useNavigate();
-  const { id } = useParams();
 
   useEffect(() => {
-    const fetchPostData = async () => {
+    const fetchPost = async () => {
       try {
         const response = await PostService.getPostById(id);
-        const post = response.data;
-        setPostDetail({
-          title: post.title,
-          summary: post.summary,
-          content: post.content,
-          file: null,
-        });
-        setContent(post.content);
+        if (response.status === 200) {
+          if (user.id !== response.data.author._id) {
+            navigate("/");
+          }
+          setPost(response.data);
+          setContent(response.data.content);
+        }
       } catch (error) {
-        Swal.fire({
+        swal.fire({
           title: "Error",
-          text: "Failed to load post data.",
+          text: error?.response?.data?.message || error.message,
           icon: "error",
         });
       }
     };
 
-    fetchPostData();
+    fetchPost();
   }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "file") {
-      setPostDetail({ ...postDetail, [name]: e.target.files[0] });
+      setPost({ ...post, [name]: e.target.files[0] });
     } else {
-      setPostDetail({ ...postDetail, [name]: value });
+      setPost({ ...post, [name]: value });
     }
   };
 
-  const handleSubmit = async () => {
+  const handleContentChange = (value) => {
+    setContent(value);
+    setPost({ ...post, content: value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     try {
       const data = new FormData();
-      data.set("title", postDetail.title);
-      data.set("summary", postDetail.summary);
-      data.set("content", postDetail.content);
-      if (postDetail.file) {
-        data.set("file", postDetail.file);
+      data.append("title", post.title);
+      data.append("summary", post.summary);
+      data.append("content", post.content);
+      if (post.file) {
+        data.append("file", post.file);
       }
 
-      const response = await PostService.updatePost(id, data);
+      const response = await PostService.updatePostById(id, data);
 
       if (response.status === 200) {
-        Swal.fire({
-          title: "Update Post",
-          text: "Post updated successfully.",
-          icon: "success",
-        }).then(() => {
-          navigate(`/`);
-        });
-      } else {
-        Swal.fire({
-          title: "Error",
-          text: "Something went wrong. Please try again.",
-          icon: "error",
-        });
+        swal
+          .fire({
+            title: "Update Post",
+            text: "Post updated successfully",
+            icon: "success",
+          })
+          .then(() => {
+            navigate(`/post/${id}`); // Redirect to the updated post
+          });
       }
     } catch (error) {
-      Swal.fire({
-        title: "Error",
-        text:
-          error.response?.data?.message ||
-          "An error occurred. Please try again.",
+      swal.fire({
+        title: "Update Post",
+        text: error?.response?.data?.message || error.message,
         icon: "error",
       });
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold text-center mb-6">Edit Post</h1>
-      <div className="space-y-6">
+    <div className="max-w-2xl mx-auto p-4 mt-8 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-semibold text-center mb-4">Edit Post</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label
             htmlFor="title"
-            className="block text-lg font-semibold text-gray-700"
+            className="block text-sm font-semibold text-gray-700"
           >
             Title
           </label>
           <input
             type="text"
-            id="title"
             name="title"
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
-            value={postDetail.title}
+            value={post.title}
             onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md text-sm"
             placeholder="Enter the post title"
             required
           />
@@ -116,16 +113,15 @@ const Edit = () => {
         <div>
           <label
             htmlFor="summary"
-            className="block text-lg font-semibold text-gray-700"
+            className="block text-sm font-semibold text-gray-700"
           >
             Summary
           </label>
           <textarea
-            id="summary"
             name="summary"
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
-            value={postDetail.summary}
+            value={post.summary}
             onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md text-sm"
             placeholder="Write a short summary"
             rows="3"
             required
@@ -135,41 +131,43 @@ const Edit = () => {
         <div>
           <label
             htmlFor="content"
-            className="block text-lg font-semibold text-gray-700"
+            className="block text-sm font-semibold text-gray-700"
           >
             Content
           </label>
-          <div className="">
-            <Editor value={postDetail.content} ref={editorRef} />
+          <div className="64">
+            <Editor
+              value={content}
+              onChange={handleContentChange}
+              ref={editorRef}
+            />
           </div>
         </div>
 
         <div>
           <label
             htmlFor="file"
-            className="block text-lg font-semibold text-gray-700"
+            className="block text-sm font-semibold text-gray-700"
           >
-            Upload Image (Optional)
+            Upload Image
           </label>
           <input
             type="file"
-            id="file"
             name="file"
-            className="mt-2 p-3 w-full border border-gray-300 rounded-md"
             onChange={handleChange}
+            className="mt-1 p-2 w-full border border-gray-300 rounded-md text-sm"
           />
         </div>
 
         <div className="text-center">
           <button
-            onClick={handleSubmit}
-            type="button"
-            className="w-full bg-blue-500 text-white p-3 rounded-md hover:bg-blue-600"
+            type="submit"
+            className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 text-sm"
           >
             Update Post
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

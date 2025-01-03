@@ -8,16 +8,18 @@ const Navbar = () => {
 
   const handleLogout = () => {
     Swal.fire({
-      title: "คุณต้องการออกจากระบบหรือไม่?",
+      title: "Do you want to logout?",
+      text: "Are you sure you want to logout?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "ตกลง",
-      cancelButtonText: "ยกเลิก",
+      confirmButtonText: "Yes",
+      cancelButtonText: "No",
     }).then((result) => {
       if (result.isConfirmed) {
         logout();
         Swal.fire({
-          title: "ออกจากระบบสำเร็จ",
+          title: "Logout",
+          text: "Logout successfully.",
           icon: "success",
         });
       }

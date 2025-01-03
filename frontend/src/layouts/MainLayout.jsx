@@ -8,7 +8,7 @@ const MainLayout = () => {
       <header>
         <Navbar />
       </header>
-      <main className="flex-grow flex item-center justify-center container h-screen mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-grow container mx-auto p-4 sm:p-6 lg:p-8">
         <Outlet />
       </main>
       <footer>
@@ -19,3 +19,4 @@ const MainLayout = () => {
 };
 
 export default MainLayout;
+
