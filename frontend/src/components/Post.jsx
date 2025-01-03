@@ -8,7 +8,7 @@ const Post = ({ title, author, summary, cover, createdAt, _id }) => {
       {/* Cover Image */}
       <a href={`/post/${_id}`} className="block">
         <img
-          src={`${baseURL}/${cover}`}
+          src={`${cover}`}
           alt={title}
           className="w-full h-60 object-cover"
         />

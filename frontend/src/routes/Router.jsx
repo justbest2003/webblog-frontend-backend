@@ -6,6 +6,7 @@ import Create from "../pages/Create";
 import PostDetail from "../pages/PostDetail";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import PostByAuthor from "../pages/PostByAuthor";
 
 const router = createBrowserRouter([
     {
@@ -29,6 +30,9 @@ const router = createBrowserRouter([
     },
     {
         path: "/register", element: <Register/>
+    },
+    {
+        path: "/author/:id", element: <PostByAuthor/>
     }
     ]    
 },

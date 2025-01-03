@@ -5,30 +5,37 @@ const secret = process.env.SECRET;
 
 // Create Post controller
 exports.createPost = async (req, res) => {
+  //File upload
+ if (!req.file) {
+    return res.status(400).json({ message: "Image is required" });
+  }
+  const { path } = req.file.firebaseUrl;
+
+  const author = req.userId;
+  const { title, summary, content } = req.body;
+  if (!title || !summary || !content) {
+    return res.status(400).json({ message: "All Fields is requires" });
+  }
+
   try {
-    const { path: cover } = req.file;
-    const author = req.userId;
-    const { title, summary, content } = req.body;
-
-    if (!title || !summary || !content) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    // Create the post document
     const postDoc = await PostModel.create({
       title,
       summary,
       content,
-      cover,
+      cover: req.file.firebaseUrl,
       author,
     });
-
-    // Respond with the created document
+    if (!postDoc) {
+      res.status(400).send({
+        message: "Cannot create new post!",
+      });
+      return;
+    }
     res.json(postDoc);
   } catch (error) {
-    console.error(error.message);
     res.status(500).send({
-      message: "An error occurred while creating the post",
+      message:
+        error.message || "Something error occurred while creating a new post.",
     });
   }
 };
@@ -90,8 +97,7 @@ exports.updatePost = async (req, res) => {
     postDoc.summary = summary;
     postDoc.content = content;
     if (req.file) {
-      const { path } = req.file;
-      postDoc.cover = path;
+      postDoc.cover = req.file.firebaseUrl;
     }
     await postDoc.save();
     res.json(postDoc);
@@ -133,3 +139,25 @@ exports.deletePost = async (req, res) => {
     });
   }
 };
+
+// Get posts by userId
+exports.getPostByAuthor = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const postDoc = await PostModel.find({author: id}).populate("author", [
+      "username",
+    ]);
+    if (!postDoc) {
+      return res.status(404).send({
+        message: "Post Not Found!",
+      });
+    }
+    res.json(postDoc);
+  } catch (error) {
+    res.status(500).send({
+      message: "Something went wrong while getting post by author!",
+    });
+  }
+};
+
+
