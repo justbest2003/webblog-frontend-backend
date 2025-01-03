@@ -1,4 +1,4 @@
-const PostModel = require("../Models/Post");
+const PostModel = require("../models/Post");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const secret = process.env.SECRET;
